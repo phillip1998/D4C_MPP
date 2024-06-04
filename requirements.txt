@@ -1,0 +1,10 @@
+dgl-cuda11.3==0.8.1 
+# (conda install -c dglteam dgl-cuda11.3==0.8.1)
+torch==1.11.9 
+# (conda install pytorch==1.11.0 torchvision==0.12.0 torchaudio==0.11.0 cudatoolkit=11.3 -c pytorch)
+
+bayesian_optimization==1.2.0
+prettytable==2.1.0
+rdkit==2022.3.5
+scikit_learn==1.1.2
+seaborn==0.11.1
