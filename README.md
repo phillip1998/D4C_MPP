@@ -1,6 +1,7 @@
 # D4C molecular property prediction
 ![License](https://img.shields.io/badge/license-D4C-red.svg)
 ![Version](https://img.shields.io/badge/version-1.0.0-brightgreen.svg)
+
 This project is a deep learning application designed to predict molecular properties. The models implemented in this project feature interpretable and hierarchical architectures, including conventional graph convolutional models.
 
 ## How to start
