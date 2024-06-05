@@ -23,3 +23,4 @@ The trained result will be saved in "_Model" folder.
 
 ## Code Attribution and Licensing Information
 This project includes code from the GC-GNN by Adem Rosenkvist Nielsen Aouichaoui (arnaou@kt.dtu.dk), licensed under the MIT License. 
+https://github.com/gsi-lab/GC-GNN/tree/main 
