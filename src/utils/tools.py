@@ -140,4 +140,46 @@ def plot(buf):
     plt.axis('off')
     plt.show()
 
-    
+import ipywidgets as widgets
+from IPython.display import display
+import os
+
+def loader_ui(tunnel:dict):
+    model_list = os.listdir("_Models")
+    model_list.sort()
+    model_list=['Select model path']+model_list
+    dd_widget = widgets.Dropdown(
+        options=model_list,
+        disabled=False,
+    )
+
+    global current_path,pred_img,lc_img
+    pred_img =widgets.Image(
+        format='png',
+        width=400,
+        height=300,
+    )
+    lc_img =widgets.Image(
+        format='png',
+        width=400,
+        height=300,
+    )
+    output = widgets.Output()
+    box2 = widgets.HBox([pred_img,lc_img])
+    box1 = widgets.VBox([dd_widget, box2])
+
+    display(box1,output)
+
+    current_path = None
+    tunnel['current_path'] = current_path
+    def on_change(change):
+        global  current_path,pred_img,lc_img
+        if type(change.new)==str and current_path!=change.new:
+            current_path=change.new
+            img1 =  open("_Models/"+current_path+"/prediction.png", "rb").read()
+            img2 =  open("_Models/"+current_path+"/learning_curve.png", "rb").read()
+            pred_img.value = img1
+            lc_img.value= img2
+            tunnel['current_path'] = current_path
+        
+    dd_widget.observe(on_change)

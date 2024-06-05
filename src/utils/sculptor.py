@@ -101,7 +101,7 @@ class SubgroupSplitter(object):
                                             
                  overlapped_ring_combine=True,  
                  log=False,
-                 draw=True,
+                 draw=False,
                 get_index=False                
                 ):
         path = os.path.join(refer_path)

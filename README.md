@@ -20,3 +20,4 @@ python main.py -n GCN -d Aqsoldb -t Solubility
 ```
 The graph cache file will be saved in "_Graph" folder.
 The trained result will be saved in "_Model" folder.
+
