@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 import matplotlib.image as img
 import rdkit.Chem as Chem
 from rdkit.Chem import Draw
+from rdkit.Chem import AllChem
+from rdkit.Chem.rdCoordGen import AddCoords
 
 import io
 import PIL
@@ -89,7 +91,8 @@ def showAtomHighlight(mol,atms_list,log=True,atom_with_index=True):
     hit_bonds_colormap={}
     
     colormap=[(1.0, 0.75, 0.79),
-               (1.0, 1.0, 0.6),
+              (0.9, 0.85, 0.81),
+               (0.95, 0.95, 0.65),
                (0.74, 0.99, 0.79),
                (0.68, 0.85, 0.90),
                (0.87, 0.63, 0.87),
@@ -99,7 +102,7 @@ def showAtomHighlight(mol,atms_list,log=True,atom_with_index=True):
                (0.50, 1.0, 0.83),
                (0.80, 0.60, 1.0),
                (1.0, 0.85, 0.73),
-               (1.0, 1.0, 0.6),
+               (0.87, 0.65, 0.95),
                (0.53, 0.81, 0.92),
                (1.0, 0.75, 0.79),
                (1.0, 0.94, 0.84)
@@ -117,6 +120,9 @@ def showAtomHighlight(mol,atms_list,log=True,atom_with_index=True):
                     hit_bonds_colormap[bond_index]=colormap[count%len(colormap)]
                     
                     
+    AllChem.Compute2DCoords(mol)
+    
+    AddCoords(mol)
     d = rdMolDraw2D.MolDraw2DCairo(1000, 800)
     d.DrawMolecule(mol,highlightAtoms = hit_ats, highlightAtomColors=hit_ats_colormap,
                    highlightBonds=hit_bonds, highlightBondColors=hit_bonds_colormap)

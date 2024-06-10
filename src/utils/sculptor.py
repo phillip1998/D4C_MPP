@@ -128,11 +128,15 @@ class SubgroupSplitter(object):
                                      absorb_neighbor_order=None,  
                                      log=None,
                                      draw=None,
-                                    get_index=None):
+                                    get_index=None,
+                                    atom_with_index=False):
         if split_order is None: split_order=self.split_order
-        if overlapped_ring_combine is None: overlapped_ring_combine=self.overlapped_ring_combine
+        if overlapped_ring_combine is None: 
+            overlapped_ring_combine=self.overlapped_ring_combine
         if combine_rest_order is None: combine_rest_order=self.combine_rest_order
-        if absorb_neighbor_order is None: absorb_neighbor_order=self.absorb_neighbor_order
+        if absorb_neighbor_order is None: 
+            absorb_neighbor_order=self.absorb_neighbor_order
+        if split_order>=8: overlapped_ring_combine=True
         if log is None: log=self.log
         if draw is None: draw=self.draw
         if get_index is None: get_index=self.get_index
@@ -156,9 +160,9 @@ class SubgroupSplitter(object):
         if absorb_neighbor_order>0:
             self.absorb_neighbor_subgroups(order=absorb_neighbor_order,log=log)
         
-        return self.return_result(log,draw,get_index)
+        return self.return_result(log,draw,get_index,atom_with_index)
     
-    def return_result(self,log=False,draw=False,get_index=False):
+    def return_result(self,log=False,draw=False,get_index=False,atom_with_index=False):
         atoms = []
         for i in self.subgroup_list:
             for j in self.subgroup_list:
@@ -170,7 +174,7 @@ class SubgroupSplitter(object):
             raise Exception("Error: not matched subgroup\n",atoms)
 
         if draw:
-            tools.showAtomHighlight(self.mol,[i.atoms for i in self.subgroup_list],log=log)
+            tools.showAtomHighlight(self.mol,[i.atoms for i in self.subgroup_list],log=log,atom_with_index=atom_with_index)
 
         if log:
             print("return_result")
