@@ -35,12 +35,12 @@ class Subgroup():
             self.smiles=remove_index(smi)
 
     def specify_group(self):
-        smiles=get_fragment_with_branch(self.mol,self.atoms)
-        if smiles =="*c1ccccc1":
-            self.name = "Phenyl"
-            self.smiles = "*c1ccccc1"
-            return None
-        return smiles
+        # smiles=get_fragment_with_branch(self.mol,self.atoms)
+        # if smiles =="*c1ccccc1":
+        #     self.name = "Phenyl"
+        #     self.smiles = "*c1ccccc1"
+        #     return None
+        return get_fragment_with_branch(self.mol,self.atoms)
 
 
 class Subgroup_list():
@@ -94,6 +94,17 @@ class Subgroup_list():
         for j in [self.subgroups[i] for i in delete_idx]:
             self.subgroups.remove(j)
 
+    def get_num_outter_bond(self, idx):
+        num_list = []
+        for a in self.subgroups[idx].atoms:
+            count=0
+            atom = self.mol.GetAtomWithIdx(int(a))
+            for n in atom.GetNeighbors():
+                if n.GetIdx() not in self.subgroups[idx].atoms:
+                    count+=1
+            num_list.append(count)
+        return num_list
+
 
 class Segmentator():
     "the class for the Segmentation"
@@ -116,7 +127,7 @@ class Segmentator():
                                    absorb_neighbor_order=a, 
                                    overlapped_ring_combine=combine_overlapped_ring)
 
-    def segment(self, mol, get_only_index=False, draw=False):
+    def segment(self, mol, get_only_index=False, draw=False, star_threshold = 4, concat_double_bond_with_ring=False):
         """
         Args:
             mol: str or Chem.rdchem.Mol
@@ -130,7 +141,7 @@ class Segmentator():
         Returns:
             list of list of int or Subgroup_list  
         """
-        return self.ss.fragmentation_with_condition(mol,get_index=get_only_index,draw=draw)
+        return self.ss.fragmentation_with_condition(mol,get_index=get_only_index,draw=draw,star_threshold = star_threshold, concat_double_bond_with_ring=concat_double_bond_with_ring)
 
 
 class SubgroupSplitter(object):
@@ -171,7 +182,9 @@ class SubgroupSplitter(object):
                                      log=None,
                                      draw=None,
                                     get_index=None,
-                                    atom_with_index=True):
+                                    atom_with_index=True,
+                                    star_threshold=4,
+                                    concat_double_bond_with_ring=False):
         if split_order is None: split_order=self.split_order
         if overlapped_ring_combine is None: overlapped_ring_combine=self.overlapped_ring_combine
         if combine_rest_order is None: combine_rest_order=self.combine_rest_order
@@ -194,6 +207,9 @@ class SubgroupSplitter(object):
         self.init_subgroup_list(layer_pat_list,layer_sorted_pattern,
                                              log=log,ring_combine=overlapped_ring_combine,mol=mol)
         
+        # 이중결합이 있는 그룹이 고리와 이웃한 경우 합침
+        if concat_double_bond_with_ring:
+            self.combine_double_bond_with_ring()
 
         # 이웃하는 패턴끼리 합침 
         if combine_rest_order>0:
@@ -203,9 +219,9 @@ class SubgroupSplitter(object):
         if absorb_neighbor_order>0:
             self.absorb_neighbor_subgroups(order=absorb_neighbor_order,log=log)
         
-        return self.return_result(log,draw,get_index,atom_with_index)
+        return self.return_result(log,draw,get_index,atom_with_index,star_threshold)
     
-    def return_result(self,log=False,draw=False,get_index=False,atom_with_index=True):
+    def return_result(self,log=False,draw=False,get_index=False,atom_with_index=True,star_threshold=4):
         atoms = []
         for i in self.subgroup_list:
             for j in self.subgroup_list:
@@ -227,7 +243,7 @@ class SubgroupSplitter(object):
             return [i.atoms for i in self.subgroup_list]
         else:
             for l in self.subgroup_list:
-                l.add_smiles()
+                l.add_smiles(thrsh = star_threshold)
             return self.subgroup_list
 
     
@@ -298,6 +314,23 @@ class SubgroupSplitter(object):
 
         self.subgroup_list = Subgroup_list(self.mol,subgroup_list)
     
+    def combine_double_bond_with_ring(self):
+        # 2. 이중결합이 있는 그룹이 고리와 이웃한 경우 합침
+        concat_targets = []
+        for i,subgroup1 in enumerate(self.subgroup_list):
+            if int(subgroup1.priority)>=5:
+                for a in subgroup1.atoms:
+                    atom = self.mol.GetAtomWithIdx(int(a))
+                    if not atom.GetIsAromatic(): continue
+                    for neighbor in atom.GetNeighbors():
+                        neighbor=neighbor.GetIdx()
+                        if neighbor in subgroup1.atoms: continue
+                        for j,subgroup2 in enumerate(self.subgroup_list):
+                            if neighbor in subgroup2.atoms:
+                                if self.mol.GetBondBetweenAtoms(int(a),neighbor).GetBondType()==Chem.rdchem.BondType.DOUBLE:
+                                    concat_targets.append([i,j])
+        self.subgroup_list.concat(concat_targets,order = '7')
+
     def combine_neighbor_subgroups(self,order=1,log=False):
         if log: 
             print("combine_neighbor_subgroups")
